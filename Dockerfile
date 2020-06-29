@@ -1,6 +1,5 @@
 FROM golang:alpine as builder
-RUN apk add --no-cache git
-RUN apk add --no-cache curl
+RUN apk add --no-cache git curl bash
 COPY main.go .
 RUN mkdir /out
 EXPOSE 8080
