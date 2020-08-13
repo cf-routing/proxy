@@ -7,3 +7,4 @@ applications:
     - go_buildpack
     env:
       GOPACKAGENAME: proxy
+      SKIP_CERT_VERIFY: false

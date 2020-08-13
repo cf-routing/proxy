@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -57,6 +58,9 @@ func infoHandler(port int) http.HandlerFunc {
 func proxyHandler(resp http.ResponseWriter, req *http.Request) {
 	destination := strings.TrimPrefix(req.URL.Path, "/proxy/")
 	destination = "http://" + destination
+
+	httpClient := buildHTTPClient()
+
 	getResp, err := httpClient.Get(destination)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "request failed: %s", err)
@@ -76,12 +80,20 @@ func proxyHandler(resp http.ResponseWriter, req *http.Request) {
 	resp.Write(readBytes)
 }
 
-var httpClient = &http.Client{
-	Transport: &http.Transport{
-		DisableKeepAlives: true,
-		Dial: (&net.Dialer{
-			Timeout:   10 * time.Second,
-			KeepAlive: 0,
-		}).Dial,
-	},
+func buildHTTPClient() *http.Client {
+	skipTLSVerify, err := strconv.ParseBool(os.Getenv("SKIP_CERT_VERIFY"))
+	if err != nil {
+		skipTLSVerify = false
+	}
+
+	return &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig:   &tls.Config{InsecureSkipVerify: skipTLSVerify},
+			DisableKeepAlives: true,
+			Dial: (&net.Dialer{
+				Timeout:   10 * time.Second,
+				KeepAlive: 0,
+			}).Dial,
+		},
+	}
 }
