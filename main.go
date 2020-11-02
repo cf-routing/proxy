@@ -63,6 +63,7 @@ func proxyHandler(resp http.ResponseWriter, req *http.Request) {
 
 	getResp, err := httpClient.Get(destination)
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "request failed: %s", err)
 		http.Error(resp, fmt.Sprintf("request failed: %s", err), http.StatusInternalServerError)
 		return
 	}
