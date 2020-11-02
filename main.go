@@ -63,21 +63,18 @@ func proxyHandler(resp http.ResponseWriter, req *http.Request) {
 
 	getResp, err := httpClient.Get(destination)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "request failed: %s", err)
-		resp.WriteHeader(http.StatusInternalServerError)
-		resp.Write([]byte(fmt.Sprintf("request failed: %s", err)))
+		http.Error(resp, fmt.Sprintf("request failed: %s", err), http.StatusInternalServerError)
 		return
 	}
 	defer getResp.Body.Close()
 
 	readBytes, err := ioutil.ReadAll(getResp.Body)
 	if err != nil {
-		resp.WriteHeader(http.StatusInternalServerError)
-		resp.Write([]byte(fmt.Sprintf("read body failed: %s", err)))
+		http.Error(resp, fmt.Sprintf("read body failed: %s", err), http.StatusInternalServerError)
 		return
 	}
 
-	resp.Write(readBytes)
+	_, _ = resp.Write(readBytes)
 }
 
 func buildHTTPClient() *http.Client {
