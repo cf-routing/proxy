@@ -61,6 +61,12 @@ func infoHandler(port int) http.HandlerFunc {
 }
 
 func proxyHandler(resp http.ResponseWriter, req *http.Request) {
+	if debug {
+		fmt.Println("====================")
+		fmt.Println("ACCESS LOG to proxy")
+		_ = req.Write(os.Stdout)
+		fmt.Println("--------------------")
+	}
 	destination := strings.TrimPrefix(req.URL.Path, "/proxy/")
 	destination = "http://" + destination
 
@@ -81,11 +87,12 @@ func proxyHandler(resp http.ResponseWriter, req *http.Request) {
 	}
 
 	if debug {
-		fmt.Println("====================")
+		fmt.Println("RESPONSE from proxied host")
 		fmt.Println("response status code:", getResp.StatusCode)
 		fmt.Println("response body:")
 		fmt.Println(string(readBytes))
 		fmt.Println("====================")
+
 	}
 
 	_, err = resp.Write(readBytes)
