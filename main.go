@@ -14,7 +14,12 @@ import (
 	"time"
 )
 
+var debug = false
+
 func main() {
+	debugStr, debugExists := os.LookupEnv("DEBUG")
+	debug = debugExists && debugStr != ""
+
 	systemPortString := os.Getenv("PORT")
 	systemPort, err := strconv.Atoi(systemPortString)
 	log.Println("Now listening on port", systemPortString)
@@ -63,7 +68,7 @@ func proxyHandler(resp http.ResponseWriter, req *http.Request) {
 
 	getResp, err := httpClient.Get(destination)
 	if err != nil {
-		log.Printf("request failed: %s", err)
+		log.Printf("request failed: %s\n", err)
 		http.Error(resp, fmt.Sprintf("request failed: %s", err), http.StatusInternalServerError)
 		return
 	}
@@ -76,11 +81,17 @@ func proxyHandler(resp http.ResponseWriter, req *http.Request) {
 	}
 
 	if debug {
-		fmt.Printf("response body: %q", readBytes)
+		fmt.Println("====================")
+		fmt.Println("response status code:", getResp.StatusCode)
+		fmt.Println("response body:")
+		fmt.Println(string(readBytes))
+		fmt.Println("====================")
 	}
 
 	_, err = resp.Write(readBytes)
-	log.Printf("failed to reply: %s", err)
+	if err != nil {
+		log.Printf("failed to reply: %s\n", err)
+	}
 }
 
 func buildHTTPClient() *http.Client {
